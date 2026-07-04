@@ -831,6 +831,11 @@
   function controlHasValue(control) {
     if (!control || control.disabled) return true;
     if (control.type === "checkbox" || control.type === "radio") return control.checked;
+    if (control.tagName === "SELECT") {
+      const value = clean(control.value);
+      if (value) return true;
+      return control.selectedIndex > 0;
+    }
     return clean(control.value) !== "";
   }
 
@@ -1061,7 +1066,9 @@
     if (!nextButton) return;
     cleanupLegacyValidationMarkup();
     bindPersonalValidation();
-    const valid = validatePersonalFields(true, false).length === 0 && visiblePersonalRequiredFieldsValid();
+    const validByRules = validatePersonalFields(true, false).length === 0;
+    const validByRequiredControls = visiblePersonalRequiredFieldsValid();
+    const valid = validByRules && validByRequiredControls;
     nextButton.disabled = !valid;
     nextButton.ariaDisabled = valid ? "false" : "true";
     if (valid) {
@@ -1071,6 +1078,17 @@
       nextButton.setAttribute("disabled", "disabled");
       nextButton.classList.add("opacity-40");
     }
+  }
+
+  function schedulePersonalNextRefresh() {
+    if (window.__roselandPersonalNextRefreshScheduled) return;
+    window.__roselandPersonalNextRefreshScheduled = true;
+    const tick = () => {
+      window.__roselandPersonalNextRefreshScheduled = false;
+      if (personalSectionVisible()) syncPersonalNext();
+    };
+    requestAnimationFrame(tick);
+    setTimeout(tick, 120);
   }
 
   function missingRequiredFields() {
@@ -1314,6 +1332,7 @@
     if (event.target && event.target.matches("select,input")) {
       setTimeout(() => {
         enhance();
+        schedulePersonalNextRefresh();
       }, 40);
     }
   });
@@ -1321,6 +1340,7 @@
     if (event.target && event.target.matches("input,select,textarea")) {
       setTimeout(() => {
         syncPersonalNext();
+        schedulePersonalNextRefresh();
       }, 20);
     }
   });
@@ -1346,6 +1366,7 @@
       return;
     }
     setTimeout(enhance, 80);
+    setTimeout(schedulePersonalNextRefresh, 100);
   });
   window.addEventListener("popstate", () => setTimeout(enhance, 80));
   let scheduled = false;
