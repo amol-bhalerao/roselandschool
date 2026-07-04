@@ -778,10 +778,7 @@
       node.style.display = junior ? "" : "none";
     });
     const panel = document.querySelector("[data-roseland-required-panel]");
-    if (panel) {
-      const activeTab = activeMainTab();
-      panel.style.display = activeTab === "Personal" ? "" : "none";
-    }
+    if (panel) panel.style.display = "";
   }
 
   function personalSectionVisible() {
@@ -1167,18 +1164,54 @@
   }
 
   function syncForcedTabVisibility() {
-    const activeTab = activeMainTab();
-    const subjectSection = Array.from(document.querySelectorAll("section,h2,div")).find((node) => /Subject choice/i.test(clean(node.textContent)));
     const panel = document.querySelector("[data-roseland-required-panel]");
-    if (panel) panel.style.display = activeTab === "Personal" ? "" : "none";
-    if (subjectSection && activeTab === "Personal") {
-      const section = subjectSection.closest("section") || subjectSection.parentElement;
-      if (section) section.style.display = "none";
-    }
-    if (subjectSection && activeTab !== "Personal") {
-      const section = subjectSection.closest("section") || subjectSection.parentElement;
-      if (section) section.style.display = "";
-    }
+    if (panel) panel.style.display = "";
+  }
+
+  function flattenAdmissionFormLayout() {
+    const form = document.querySelector("form");
+    if (!form) return;
+
+    const tabButtons = Array.from(document.querySelectorAll("button")).filter((button) => {
+      const text = clean(button.textContent).replace(/\s+\d+$/, "");
+      return MAIN_TABS.includes(text);
+    });
+    const tabRow = tabButtons[0]?.closest("div");
+    if (tabRow) tabRow.style.display = "none";
+
+    const progressText = Array.from(document.querySelectorAll("p,div,span")).find((node) => /^Form progress:/i.test(clean(node.textContent || "")));
+    const progressWrap = progressText?.closest("div");
+    if (progressWrap) progressWrap.style.display = "none";
+
+    const progressBar = Array.from(document.querySelectorAll("div")).find((node) => {
+      const className = String(node.className || "");
+      return /rounded-full/.test(className) && /from-sky-500|to-emerald-500/.test(node.innerHTML || "");
+    });
+    if (progressBar?.parentElement) progressBar.parentElement.style.display = "none";
+
+    Array.from(form.querySelectorAll("section")).forEach((section) => {
+      section.style.display = "";
+    });
+
+    Array.from(document.querySelectorAll("h1,h2,h3")).forEach((heading) => {
+      const text = clean(heading.textContent || "");
+      if (/^(Admission details|Subject choice|Personal details|Contact details|Address details|Correspondence address|Reservation details|Caste details|Previous qualification|Qualification details|Upload documents|Documents|Declaration)$/i.test(text)) {
+        const section = heading.closest("section");
+        if (section) section.style.display = "";
+      }
+    });
+
+    const footerWrap = Array.from(document.querySelectorAll("button"))
+      .find((button) => /^(Back|Next)$/i.test(clean(button.textContent || "")))
+      ?.closest("div");
+    if (footerWrap) footerWrap.style.display = "none";
+
+    const panel = document.querySelector("[data-roseland-required-panel]");
+    if (panel) panel.style.display = "";
+
+    form.classList.add("space-y-5");
+    form.style.overflowY = "auto";
+    form.style.paddingBottom = "2rem";
   }
 
   function removeTabInstructions() {
@@ -1373,6 +1406,7 @@
     ensureMediumInCourseSection();
     ensureMarathiNameFields();
     updateJuniorVisibility();
+    flattenAdmissionFormLayout();
     bindPersonalValidation();
     syncPersonalNext();
     syncForcedTabVisibility();
