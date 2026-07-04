@@ -843,6 +843,51 @@
     return visiblePersonalRequiredControls().every(controlHasValue);
   }
 
+  function personalControlLabel(control) {
+    const label = control?.closest("label");
+    const original = clean(label?.dataset.roselandOriginalLabel || control?.getAttribute("data-field") || "");
+    return baseLabelText(label || control, original) || clean(control?.getAttribute("data-field") || "Required field");
+  }
+
+  function personalControlRule(control) {
+    const key = canonicalFieldKey(personalControlLabel(control));
+    switch (key) {
+      case "Last Name / Surname":
+        return { label: "Last Name / Surname", message: "Last name is required.", validate: (value) => value !== "" };
+      case "First Name":
+        return { label: "First Name", message: "First name is required.", validate: (value) => value !== "" };
+      case "Middle / Father Name":
+      case "Father's First Name":
+        return { label: "Father's First Name", message: "Father first name is required.", validate: (value) => value !== "" };
+      case "Gender":
+        return { label: "Gender", message: "Gender is required.", validate: (value) => value !== "" };
+      case "Date of Birth":
+        return { label: "Date of Birth", message: "Date of birth is required.", validate: (value) => value !== "" };
+      case "Place of Birth":
+        return { label: "Place of Birth", message: "Place of birth is required.", validate: (value) => value !== "" };
+      case "Mobile No":
+        return { label: "Mobile No", message: "Enter 10 digit mobile number.", validate: (value) => value.replace(/\D+/g, "").length === 10 };
+      case "Parent's/Guardian's Mobile Number":
+        return { label: "Parent's/Guardian's Mobile Number", message: "Enter 10 digit parent mobile number.", validate: (value) => value.replace(/\D+/g, "").length === 10 };
+      default:
+        return { label: personalControlLabel(control), message: "This field is required.", validate: (value) => value !== "" };
+    }
+  }
+
+  function validateVisiblePersonalControls(showTouchedOnly = true, forceShowAll = false) {
+    const missing = [];
+    visiblePersonalRequiredControls().forEach((control) => {
+      const value = clean(control.type === "checkbox" ? (control.checked ? "Yes" : "") : control.value);
+      const rule = personalControlRule(control);
+      const touched = control.dataset.roselandTouched === "true";
+      const shouldShow = forceShowAll || !showTouchedOnly || touched;
+      const valid = rule.validate(value);
+      setValidationError(control, rule.label, shouldShow && !valid ? rule.message : "");
+      if (!valid) missing.push(`${rule.label}: ${rule.message}`);
+    });
+    return Array.from(new Set(missing));
+  }
+
   function canonicalFieldAliases(label) {
     return labelAliases(label);
   }
@@ -947,6 +992,8 @@
   }
 
   function validatePersonalFields(showTouchedOnly = true, forceShowAll = false) {
+    const directMissing = validateVisiblePersonalControls(showTouchedOnly, forceShowAll);
+    if (directMissing.length) return directMissing;
     const missing = [];
     personalValidationRules().forEach((rule) => {
       const controls = findVisibleControlsForKeys(rule.keys);
@@ -966,47 +1013,32 @@
   }
 
   function bindPersonalValidation() {
-    personalValidationRules().forEach((rule) => {
-      findVisibleControlsForKeys(rule.keys).forEach((control) => {
-        if (!control || control.dataset.roselandValidationBound === "true") return;
-        control.dataset.roselandValidationBound = "true";
-        const onValidate = () => {
-          validatePersonalFields(true, false);
-          syncPersonalNext();
-        };
-        control.addEventListener("blur", () => {
-          control.dataset.roselandTouched = "true";
-          onValidate();
-        });
-        control.addEventListener("change", () => {
-          control.dataset.roselandTouched = "true";
-          onValidate();
-        });
-        control.addEventListener("input", onValidate);
-      });
-    });
     visiblePersonalRequiredControls().forEach((control) => {
-      if (control.dataset.roselandRequiredBound === "true") return;
-      control.dataset.roselandRequiredBound = "true";
+      if (control.dataset.roselandValidationBound === "true") return;
+      control.dataset.roselandValidationBound = "true";
       const onValidate = () => syncPersonalNext();
       control.addEventListener("blur", () => {
         control.dataset.roselandTouched = "true";
+        validatePersonalFields(true, false);
         onValidate();
       });
       control.addEventListener("change", () => {
         control.dataset.roselandTouched = "true";
+        validatePersonalFields(true, false);
         onValidate();
       });
-      control.addEventListener("input", onValidate);
+      control.addEventListener("input", () => {
+        validatePersonalFields(true, false);
+        onValidate();
+      });
     });
   }
 
   function resetPersonalValidationState() {
-    personalValidationRules().forEach((rule) => {
-      findVisibleControlsForKeys(rule.keys).forEach((control) => {
-        delete control.dataset.roselandTouched;
-        setValidationError(control, rule.label, "");
-      });
+    visiblePersonalRequiredControls().forEach((control) => {
+      delete control.dataset.roselandTouched;
+      const rule = personalControlRule(control);
+      setValidationError(control, rule.label, "");
     });
   }
 
@@ -1092,14 +1124,7 @@
   }
 
   function missingRequiredFields() {
-    const missing = validatePersonalFields(false, true);
-    visiblePersonalRequiredControls().forEach((control) => {
-      if (controlHasValue(control)) return;
-      const label = control.closest("label");
-      const text = clean(label?.dataset.roselandOriginalLabel || control.getAttribute("data-field") || "Required field");
-      missing.push(`${text}: This field is required.`);
-    });
-    return Array.from(new Set(missing));
+    return validateVisiblePersonalControls(false, true);
   }
 
   function normalizeAdmissionHeading() {
@@ -1352,6 +1377,7 @@
         event.preventDefault();
         event.stopPropagation();
         syncPersonalNext();
+        window.alert(missing.join("\n"));
         return;
       }
       const snapshot = collectVisibleFieldValues();
