@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ROSELAND SCHOOL CMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <section class="login-card" id="login-panel">
+      <img src="../assets/images/logo.jpeg" alt="ROSELAND SCHOOL logo">
+      <span class="eyebrow">Website CMS</span>
+      <h1>Manage ROSELAND SCHOOL content</h1>
+      <form id="login-form">
+        <label>
+          Username
+          <input name="username" value="admin" autocomplete="username" required>
+        </label>
+        <label>
+          Password
+          <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Login to CMS</button>
+        <p class="message" id="login-message"></p>
+      </form>
+    </section>
+
+    <section class="dashboard hidden" id="dashboard-panel">
+      <aside class="sidebar">
+        <img src="../assets/images/logo.jpeg" alt="ROSELAND SCHOOL logo">
+        <h2>ROSELAND CMS</h2>
+        <p>Update homepage text, contact details, class cards and gallery captions.</p>
+        <a href="../" target="_blank" rel="noopener">View Website</a>
+        <button id="logout-button" type="button">Logout</button>
+      </aside>
+
+      <form class="editor" id="content-form">
+        <div class="editor-header">
+          <div>
+            <span class="eyebrow">Live Website Editor</span>
+            <h1>Homepage CMS Configuration</h1>
+          </div>
+          <button type="submit">Save Changes</button>
+        </div>
+
+        <section class="panel">
+          <h3>Hero Section</h3>
+          <div class="grid">
+            <label>Brand Tagline<input name="brand_tagline"></label>
+            <label>Hero Eyebrow<input name="hero_eyebrow"></label>
+            <label class="wide">Hero Title<textarea name="hero_title" rows="2"></textarea></label>
+            <label class="wide">Hero Description<textarea name="hero_text" rows="3"></textarea></label>
+            <label>Primary Button<input name="hero_primary_button"></label>
+            <label>Call Button<input name="hero_call_button"></label>
+            <label>Badge Title<input name="admission_badge_title"></label>
+            <label>Badge Text<input name="admission_badge_text"></label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>Highlights</h3>
+          <div class="grid">
+            <label>Highlight 1 Title<input name="stat_1_title"></label>
+            <label>Highlight 1 Text<input name="stat_1_text"></label>
+            <label>Highlight 2 Title<input name="stat_2_title"></label>
+            <label>Highlight 2 Text<input name="stat_2_text"></label>
+            <label>Highlight 3 Title<input name="stat_3_title"></label>
+            <label>Highlight 3 Text<input name="stat_3_text"></label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>About & Classes</h3>
+          <div class="grid">
+            <label>About Eyebrow<input name="about_eyebrow"></label>
+            <label class="wide">About Title<textarea name="about_title" rows="2"></textarea></label>
+            <label class="wide">About Text<textarea name="about_text" rows="4"></textarea></label>
+            <label>Classes Eyebrow<input name="programs_eyebrow"></label>
+            <label class="wide">Classes Title<textarea name="programs_title" rows="2"></textarea></label>
+            <label>Pre-primary Title<input name="preprimary_title"></label>
+            <label>Pre-primary Text<input name="preprimary_text"></label>
+            <label>Primary Title<input name="primary_title"></label>
+            <label>Primary Text<input name="primary_text"></label>
+            <label>Secondary Title<input name="secondary_title"></label>
+            <label>Secondary Text<input name="secondary_text"></label>
+            <label>Junior Title<input name="junior_title"></label>
+            <label>Junior Text<input name="junior_text"></label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>Gallery & Contact</h3>
+          <div class="grid">
+            <label>Gallery Eyebrow<input name="gallery_eyebrow"></label>
+            <label class="wide">Gallery Title<textarea name="gallery_title" rows="2"></textarea></label>
+            <label>Caption 1<input name="gallery_1_caption"></label>
+            <label>Caption 2<input name="gallery_2_caption"></label>
+            <label>Caption 3<input name="gallery_3_caption"></label>
+            <label>Caption 4<input name="gallery_4_caption"></label>
+            <label>Admission Eyebrow<input name="admission_eyebrow"></label>
+            <label>Admission Title<input name="admission_title"></label>
+            <label>Contact Eyebrow<input name="contact_eyebrow"></label>
+            <label>Contact Title<input name="contact_title"></label>
+            <label class="wide">School Address<textarea name="school_address" rows="2"></textarea></label>
+            <label>School Email<input name="school_email"></label>
+            <label>School Phone<input name="school_phone"></label>
+          </div>
+        </section>
+
+        <p class="message" id="save-message"></p>
+      </form>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>

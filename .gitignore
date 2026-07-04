@@ -1,0 +1,10 @@
+*.log
+.env
+.DS_Store
+Thumbs.db
+node_modules/
+vendor/
+.deploy/
+.codex-tmp/
+tmp/
+*.zip
