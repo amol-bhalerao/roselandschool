@@ -1098,11 +1098,13 @@
     if (!nextButton) return;
     cleanupLegacyValidationMarkup();
     bindPersonalValidation();
-    const validByRules = validatePersonalFields(true, false).length === 0;
+    const currentMissing = missingRequiredFields();
+    const validByRules = currentMissing.length === 0;
     const validByRequiredControls = visiblePersonalRequiredFieldsValid();
     const valid = validByRules && validByRequiredControls;
     nextButton.disabled = !valid;
     nextButton.ariaDisabled = valid ? "false" : "true";
+    syncPersonalNextHint(nextButton, currentMissing);
     if (valid) {
       nextButton.removeAttribute("disabled");
       nextButton.classList.remove("pointer-events-none", "opacity-50", "opacity-40", "opacity-30", "opacity-25");
@@ -1125,6 +1127,31 @@
 
   function missingRequiredFields() {
     return validateVisiblePersonalControls(false, true);
+  }
+
+  function syncPersonalNextHint(nextButton, missing) {
+    if (!nextButton) return;
+    const footer = nextButton.closest("div");
+    if (!footer) return;
+    let hint = footer.querySelector("[data-roseland-next-hint]");
+    if (!hint) {
+      hint = document.createElement("div");
+      hint.dataset.roselandNextHint = "true";
+      hint.className = "hidden w-full text-right text-xs font-bold text-rose-600";
+      footer.insertBefore(hint, nextButton);
+    }
+    if (!missing.length) {
+      nextButton.removeAttribute("title");
+      nextButton.removeAttribute("data-roseland-missing-fields");
+      hint.textContent = "";
+      hint.classList.add("hidden");
+      return;
+    }
+    const summary = missing.join("\n");
+    nextButton.title = summary;
+    nextButton.dataset.roselandMissingFields = summary;
+    hint.textContent = `Remaining: ${missing.slice(0, 3).join(" | ")}${missing.length > 3 ? ` | +${missing.length - 3} more` : ""}`;
+    hint.classList.remove("hidden");
   }
 
   function normalizeAdmissionHeading() {
